@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard WFHb Kondisi Tertentu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3F4F1;
+    --surface:#FFFFFF;
+    --ink:#1C2B39;
+    --ink-soft:#5B6B77;
+    --ink-faint:#8D98A1;
+    --line:#DDE2E0;
+    --line-soft:#EBEEEC;
+    --brand:#2B4C6F;
+    --brand-deep:#16283A;
+    --aktif:#1F7A5C;
+    --aktif-bg:#E4F1EC;
+    --akan:#B8842B;
+    --akan-bg:#F6EEDD;
+    --selesai:#7C8790;
+    --selesai-bg:#EDEEEE;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:36px 28px 80px;}
+
+  header.top{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:18px;margin-bottom:28px;flex-wrap:wrap;gap:12px;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--brand);margin-bottom:6px;font-weight:500;
+  }
+  h1{
+    font-family:'Source Serif 4',serif;font-weight:600;font-size:32px;margin:0;
+    letter-spacing:-.01em;color:var(--brand-deep);
+  }
+  .top-meta{text-align:right;font-size:12px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;}
+  .top-meta div:first-child{margin-bottom:4px;}
+
+  /* stat cards */
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:32px;}
+  .stat{background:var(--surface);padding:18px 20px;}
+  .stat .n{font-family:'Source Serif 4',serif;font-size:30px;font-weight:600;line-height:1;color:var(--brand-deep);}
+  .stat .l{font-size:11.5px;color:var(--ink-soft);margin-top:6px;text-transform:uppercase;letter-spacing:.06em;}
+  .stat.aktif .n{color:var(--aktif);}
+  .stat.akan .n{color:var(--akan);}
+  .stat.selesai .n{color:var(--selesai);}
+
+  section{margin-bottom:32px;}
+  .sec-title{
+    font-family:'Source Serif 4',serif;font-size:18px;font-weight:600;
+    margin:0 0 3px 0;color:var(--brand-deep);
+  }
+  .sec-sub{font-size:12.5px;color:var(--ink-soft);margin-bottom:14px;}
+
+  /* timeline */
+  .timeline-card{background:var(--surface);border:1px solid var(--line);padding:20px 22px 16px;}
+  .tl-axis{
+    display:grid;position:relative;height:22px;margin-left:190px;
+    font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-faint);
+    border-bottom:1px solid var(--line-soft);margin-bottom:6px;
+  }
+  .tl-axis span{position:absolute;transform:translateX(-50%);}
+  .tl-row{display:flex;align-items:center;height:26px;position:relative;}
+  .tl-name{
+    width:190px;flex:none;font-size:11.5px;color:var(--ink);padding-right:10px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .tl-track{position:relative;flex:1;height:14px;background:var(--line-soft);border-radius:2px;}
+  .tl-bar{position:absolute;top:0;height:14px;border-radius:2px;min-width:3px;}
+  .tl-bar.aktif{background:var(--aktif);}
+  .tl-bar.akan{background:var(--akan);}
+  .tl-bar.selesai{background:var(--selesai);}
+  .tl-today{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--brand);z-index:5;}
+  .tl-today-label{
+    position:absolute;top:-18px;font-size:9.5px;font-family:'IBM Plex Mono',monospace;
+    color:var(--brand);transform:translateX(-50%);white-space:nowrap;
+  }
+  .legend{display:flex;gap:18px;margin-top:14px;font-size:11px;color:var(--ink-soft);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend i{width:10px;height:10px;border-radius:2px;display:inline-block;}
+
+  /* controls */
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+  .search{
+    flex:1;min-width:200px;padding:9px 12px;border:1px solid var(--line);
+    background:var(--surface);font-family:inherit;font-size:13px;border-radius:3px;color:var(--ink);
+  }
+  .search:focus{outline:none;border-color:var(--brand);}
+  .chip{
+    padding:7px 13px;border:1px solid var(--line);background:var(--surface);
+    font-size:12px;border-radius:20px;cursor:pointer;color:var(--ink-soft);font-family:inherit;
+    transition:all .12s;
+  }
+  .chip:hover{border-color:var(--ink-soft);}
+  .chip.active{background:var(--ink);border-color:var(--ink);color:#fff;}
+  select.unit-filter{
+    padding:8px 12px;border:1px solid var(--line);background:var(--surface);
+    font-family:inherit;font-size:12.5px;border-radius:3px;color:var(--ink);max-width:220px;
+  }
+  .count-note{font-size:12px;color:var(--ink-faint);margin-bottom:10px;font-family:'IBM Plex Mono',monospace;}
+
+  /* table */
+  .table-card{background:var(--surface);border:1px solid var(--line);overflow:hidden;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  thead th{
+    text-align:left;padding:11px 14px;background:var(--brand-deep);color:#fff;
+    font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  tbody tr{border-bottom:1px solid var(--line-soft);}
+  tbody tr:hover{background:#FAFAF9;}
+  tbody td{padding:12px 14px;vertical-align:top;}
+  td.no{color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;width:28px;}
+  td.nama{font-weight:600;min-width:150px;}
+  td.nama .nip{display:block;font-weight:400;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;font-size:11px;margin-top:2px;}
+  td.unit{color:var(--ink-soft);min-width:150px;}
+  td.lokasi{min-width:110px;}
+  .badge-loc{
+    display:inline-block;background:var(--line-soft);color:var(--ink);
+    border-radius:3px;padding:2px 7px;font-size:11px;margin:1px 3px 1px 0;
+  }
+  td.periode{min-width:190px;font-family:'IBM Plex Mono',monospace;font-size:11px;}
+  .periode-item{display:flex;align-items:baseline;gap:6px;margin-bottom:3px;}
+  .periode-item i{width:6px;height:6px;border-radius:50%;flex:none;}
+  .periode-item i.aktif{background:var(--aktif);}
+  .periode-item i.akan{background:var(--akan);}
+  .periode-item i.selesai{background:var(--selesai);}
+  td.alasan{min-width:260px;color:var(--ink-soft);line-height:1.5;}
+  td.status{white-space:nowrap;}
+  .status-pill{
+    display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;
+  }
+  .status-pill.aktif{background:var(--aktif-bg);color:var(--aktif);}
+  .status-pill.akan{background:var(--akan-bg);color:var(--akan);}
+  .status-pill.selesai{background:var(--selesai-bg);color:var(--selesai);}
+
+  .empty{padding:40px;text-align:center;color:var(--ink-faint);font-size:13px;}
+
+  footer{margin-top:26px;font-size:11px;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;}
+
+  @media(max-width:800px){
+    .stats{grid-template-columns:repeat(2,1fr);}
+    .tl-name{width:110px;font-size:10px;}
+    .tl-axis{margin-left:110px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <div class="eyebrow">Ditjen Perbendaharaan · Fleksibilitas Tempat Bekerja</div>
+      <h1>WFHb Kondisi Tertentu</h1>
+    </div>
+    <div class="top-meta">
+      <div id="asOf">—</div>
+      <div id="totalMeta">—</div>
+    </div>
+  </header>
+
+  <div class="stats" id="statCards"></div>
+
+  <section>
+    <div class="sec-title">Linimasa Periode Pelaksanaan</div>
+    <div class="sec-sub">Setiap baris adalah satu pegawai; setiap batang adalah satu periode pelaksanaan WFHb. Garis vertikal menandai hari ini.</div>
+    <div class="timeline-card">
+      <div class="tl-axis" id="tlAxis"></div>
+      <div id="tlRows"></div>
+      <div class="legend">
+        <span><i style="background:var(--aktif)"></i>Aktif</span>
+        <span><i style="background:var(--akan)"></i>Akan Datang</span>
+        <span><i style="background:var(--selesai)"></i>Selesai</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title">Daftar Pegawai</div>
+    <div class="sec-sub">Cari nama, atau saring berdasarkan status dan unit kerja.</div>
+    <div class="controls">
+      <input type="text" class="search" id="searchBox" placeholder="Cari nama, NIP, atau lokasi…">
+      <button class="chip active" data-status="all">Semua</button>
+      <button class="chip" data-status="aktif">Aktif</button>
+      <button class="chip" data-status="akan">Akan Datang</button>
+      <button class="chip" data-status="selesai">Selesai</button>
+      <select class="unit-filter" id="unitFilter"><option value="all">Semua Unit Kerja</option></select>
+    </div>
+    <div class="count-note" id="countNote"></div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>No</th><th>Nama / NIP</th><th>Unit Kerja</th><th>Lokasi</th>
+            <th>Periode Pelaksanaan</th><th>Alasan</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty" id="emptyState" style="display:none;">Tidak ada data yang cocok dengan pencarian/filter.</div>
+    </div>
+  </section>
+
+  <footer>Dashboard dibuat otomatis dari data yang diberikan — status dihitung terhadap tanggal hari ini secara berjalan.</footer>
+</div>
+
+<script>
+const RAW = [
+{no:1,nama:"In Setyo Utomo",nip:"197504191996021001",unit:"Kanwil DJPb Provinsi NTT",lokasi:["Kediri"],periode:[["2025-02-06","2025-02-19"]],alasan:"Mendampingi istri yang membutuhkan perawatan khusus berdasarkan rekomendasi dokter spesialis."},
+{no:2,nama:"Niken Ardarini",nip:"199910112021012001",unit:"Kanwil DJPb Provinsi Kaltara",lokasi:["Wonosobo"],periode:[["2025-02-17","2025-02-28"]],alasan:"Dalam proses pengobatan pasca operasi Laparotomi."},
+{no:3,nama:"Ridwan Ash Shidiqi",nip:"199809032019121003",unit:"Setditjen",lokasi:["Makassar"],periode:[["2025-04-28","2025-05-09"]],alasan:"Mendampingi perawatan dan pemulihan istri yang sedang sakit pasca operasi dan meninggalnya anak setelah kelahiran 2 hari."},
+{no:4,nama:"Joshie Mayyudha",nip:"199905062021011002",unit:"Kanwil DJPb Provinsi Kaltara",lokasi:["Tarakan"],periode:[["2025-09-22","2025-10-15"]],alasan:"Mendampingi istri dalam periode trimester III kehamilan dengan posisi janin maternal care for transverse and oblique lie."},
+{no:5,nama:"Bella Fatma Irayanti",nip:"200201072023022001",unit:"Kanwil DJPb Provinsi Sultra",lokasi:["Mojokerto"],periode:[["2025-11-10","2025-12-24"],["2026-01-26","2026-02-27"]],alasan:"Proses pengobatan sakit karena virus di paru-paru dan otak."},
+{no:6,nama:"Risna Eka Susanti",nip:"200004152023022001",unit:"Kanwil DJPb Provinsi Sulbar",lokasi:["Surakarta"],periode:[["2026-02-12","2026-03-31"],["2026-04-01","2026-05-31"],["2026-06-01","2026-08-31"]],alasan:"Pengobatan dan pemulihan cedera parsial anterior cruciate ligament (ACL) serta meniskus pada lutut kiri."},
+{no:7,nama:"Muhamad Ammar Fadli",nip:"200010312023021001",unit:"Kanwil DJPb Provinsi Papua",lokasi:["Jakarta"],periode:[["2026-02-18","2026-03-27"],["2026-03-30","2026-04-30"],["2026-05-01","2026-05-31"],["2026-06-02","2026-06-30"],["2026-07-01","2026-08-31"]],alasan:"Pemeriksaan, perawatan, dan penanganan medis atas gangguan kesehatan berupa Gastro Intestinal Stromal Tumor (GIST)."},
+{no:8,nama:"Muhammad Pandu Rahmandani",nip:"199902122021011001",unit:"Kanwil DJPb Provinsi Kalsel",lokasi:["Jakarta"],periode:[["2026-03-25","2026-04-10"]],alasan:"Memiliki anak berumur 5 bulan yang membutuhkan perawatan khusus pasca operasi jantung bawaan berdasarkan rekomendasi dokter spesialis."},
+{no:9,nama:"Qonita Nadiya Isfahani",nip:"199910052021012001",unit:"Kanwil DJPb Provinsi Kalsel",lokasi:["Jakarta","Surabaya","Banjarmasin"],periode:[["2026-03-25","2026-04-10"],["2026-06-26","2026-07-10"],["2026-07-13","2026-07-31"],["2026-08-03","2026-08-17"]],alasan:"Memiliki anak berumur 5 bulan yang membutuhkan perawatan khusus pasca operasi jantung bawaan berdasarkan rekomendasi dokter spesialis."},
+{no:10,nama:"Arief Rokhman",nip:"197112181992011001",unit:"Kanwil DJPb Provinsi Aceh",lokasi:["Tegal"],periode:[["2026-04-06","2026-04-17"]],alasan:"Pemulihan dan monitoring pasca tindakan operasi pemasangan ring jantung."},
+{no:11,nama:"Nadia Nur Rahma",nip:"200003022022012002",unit:"Kanwil DJPb Provinsi Sultra",lokasi:["Wonosobo"],periode:[["2026-04-27","2026-06-26"],["2026-06-29","2026-08-31"]],alasan:"Proses pengobatan sakit kanker payudara."},
+{no:12,nama:"Firza Yulianti",nip:"197611101996022001",unit:"Kanwil DJPb Provinsi Riau",lokasi:["Tangerang Selatan"],periode:[["2026-05-21","2026-05-26"]],alasan:"Anak pegawai mengalami kecelakaan dan membutuhkan perawatan khusus serta pendampingan orang tua selama masa pemulihan."},
+{no:13,nama:"Indah Sunaringtyas",nip:"196909201996032001",unit:"Kanwil DJPb Provinsi Jawa Tengah",lokasi:["Sukoharjo"],periode:[["2026-05-25","2026-06-24"]],alasan:"Perawatan sakit kanker payudara."},
+{no:14,nama:"Ery Purwanti",nip:"197502081996022001",unit:"Kanwil DJPb Provinsi Jawa Barat",lokasi:["Garut"],periode:[["2026-06-29","2026-07-17"]],alasan:"Pemulihan pasca operasi laparoscopy Cholecystectomy konversi open dan Adhesiolisis."},
+{no:15,nama:"Afif Miftahuddin",nip:"198306072003121004",unit:"Kanwil DJPb Provinsi Sumatera Utara",lokasi:["Karanganyar"],periode:[["2026-07-06","2026-08-31"]],alasan:"Pemulihan pasca operasi batu ginjal."},
+{no:16,nama:"Achmad Arif Pujianto",nip:"200107162023021004",unit:"Kanwil DJPb Provinsi Papua",lokasi:["Surabaya"],periode:[["2026-07-22","2026-08-31"]],alasan:"Pengobatan atas kondisi gangguan radang dan polip/benjolan pada usus besar."},
+{no:17,nama:"Ulfa Rofi'anita",nip:"199701042018012002",unit:"Kanwil DJPb Provinsi Lampung",lokasi:["Demak"],periode:[["2026-08-24","2026-10-02"]],alasan:"Pengobatan atas kondisi notching arteri uterina (hambatan aliran darah di pembuluh darah rahim); selama kehamilan dilaksanakan terapi obat pengencer darah."}
+];
+
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+const MONTHS_ID = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+const DAY_ID = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+
+function fmtDateID(d){ return d.getDate()+" "+MONTHS_ID[d.getMonth()]+" "+d.getFullYear(); }
+function periodStatus(start,end){
+  const s=new Date(start), e=new Date(end);
+  if(TODAY>=s && TODAY<=e) return "aktif";
+  if(TODAY<s) return "akan";
+  return "selesai";
+}
+function rowStatus(periode){
+  const statuses = periode.map(p=>periodStatus(p[0],p[1]));
+  if(statuses.includes("aktif")) return "aktif";
+  if(statuses.includes("akan")) return "akan";
+  return "selesai";
+}
+const STATUS_LABEL = {aktif:"Aktif", akan:"Akan Datang", selesai:"Selesai"};
+
+const DATA = RAW.map(r=>({...r, status:rowStatus(r.periode)}));
+
+// header meta
+document.getElementById('asOf').textContent = "Per "+fmtDateID(TODAY)+" ("+DAY_ID[TODAY.getDay()]+")";
+document.getElementById('totalMeta').textContent = DATA.length+" pegawai tercatat";
+
+// stat cards
+const counts = {aktif:0, akan:0, selesai:0};
+DATA.forEach(d=>counts[d.status]++);
+const unitSet = [...new Set(DATA.map(d=>d.unit))].sort();
+document.getElementById('statCards').innerHTML = `
+  <div class="stat"><div class="n">${DATA.length}</div><div class="l">Total Pegawai</div></div>
+  <div class="stat aktif"><div class="n">${counts.aktif}</div><div class="l">Sedang Aktif</div></div>
+  <div class="stat akan"><div class="n">${counts.akan}</div><div class="l">Akan Datang</div></div>
+  <div class="stat selesai"><div class="n">${counts.selesai}</div><div class="l">Selesai</div></div>
+  <div class="stat"><div class="n">${unitSet.length}</div><div class="l">Unit Kerja</div></div>
+`;
+
+// timeline range
+let minD = new Date(Math.min(...DATA.flatMap(d=>d.periode.map(p=>new Date(p[0])))));
+let maxD = new Date(Math.max(...DATA.flatMap(d=>d.periode.map(p=>new Date(p[1]))), TODAY.getTime()));
+minD.setDate(1);
+maxD = new Date(maxD.getFullYear(), maxD.getMonth()+1, 0);
+const spanMs = maxD - minD;
+function pct(d){ return ((new Date(d)-minD)/spanMs*100); }
+
+// axis: tick every 3 months
+const axis = document.getElementById('tlAxis');
+let cursor = new Date(minD);
+while(cursor <= maxD){
+  const el = document.createElement('span');
+  el.style.left = pct(cursor)+"%";
+  el.textContent = MONTHS_ID[cursor.getMonth()]+" "+String(cursor.getFullYear()).slice(2);
+  axis.appendChild(el);
+  cursor.setMonth(cursor.getMonth()+3);
+}
+
+// timeline rows
+const tlRows = document.getElementById('tlRows');
+function renderTimeline(list){
+  tlRows.innerHTML = "";
+  list.forEach(d=>{
+    const row = document.createElement('div');
+    row.className = 'tl-row';
+    const track = document.createElement('div');
+    track.className = 'tl-track';
+    d.periode.forEach(p=>{
+      const bar = document.createElement('div');
+      const st = periodStatus(p[0],p[1]);
+      bar.className = 'tl-bar '+st;
+      const left = pct(p[0]), right = pct(p[1]);
+      bar.style.left = left+"%";
+      bar.style.width = Math.max(right-left,0.4)+"%";
+      bar.title = d.nama+": "+fmtDateID(new Date(p[0]))+" – "+fmtDateID(new Date(p[1]))+" ("+STATUS_LABEL[st]+")";
+      track.appendChild(bar);
+    });
+    const todayMark = document.createElement('div');
+    todayMark.className = 'tl-today';
+    todayMark.style.left = pct(TODAY)+"%";
+    track.appendChild(todayMark);
+    row.innerHTML = `<div class="tl-name" title="${d.nama}">${d.nama}</div>`;
+    row.appendChild(track);
+    tlRows.appendChild(row);
+  });
+  // today label on first row only
+  if(list.length){
+    const label = document.createElement('div');
+    label.className='tl-today-label';
+    label.style.left = (190/1180*100)+"%"; // fallback, replaced below
+  }
+}
+renderTimeline(DATA);
+// today label placed once, over axis area
+const todayLbl = document.createElement('div');
+todayLbl.className = 'tl-today-label';
+todayLbl.style.left = pct(TODAY)+"%";
+todayLbl.textContent = "Hari ini";
+axis.style.position = 'relative';
+axis.appendChild(todayLbl);
+
+// unit filter options
+const unitFilter = document.getElementById('unitFilter');
+unitSet.forEach(u=>{
+  const opt = document.createElement('option');
+  opt.value = u; opt.textContent = u;
+  unitFilter.appendChild(opt);
+});
+
+// table + filters
+const tbody = document.getElementById('tbody');
+let state = {status:'all', unit:'all', q:''};
+
+function renderTable(){
+  const filtered = DATA.filter(d=>{
+    if(state.status!=='all' && d.status!==state.status) return false;
+    if(state.unit!=='all' && d.unit!==state.unit) return false;
+    if(state.q){
+      const hay = (d.nama+" "+d.nip+" "+d.lokasi.join(" ")).toLowerCase();
+      if(!hay.includes(state.q.toLowerCase())) return false;
+    }
+    return true;
+  });
+
+  document.getElementById('countNote').textContent = `Menampilkan ${filtered.length} dari ${DATA.length} pegawai`;
+  document.getElementById('emptyState').style.display = filtered.length ? 'none' : 'block';
+
+  tbody.innerHTML = filtered.map(d=>{
+    const periodeHTML = d.periode.map(p=>{
+      const st = periodStatus(p[0],p[1]);
+      return `<div class="periode-item"><i class="${st}"></i>${fmtDateID(new Date(p[0]))} – ${fmtDateID(new Date(p[1]))}</div>`;
+    }).join("");
+    const lokasiHTML = d.lokasi.map(l=>`<span class="badge-loc">${l}</span>`).join("");
+    return `<tr>
+      <td class="no">${d.no}</td>
+      <td class="nama">${d.nama}<span class="nip">${d.nip}</span></td>
+      <td class="unit">${d.unit}</td>
+      <td class="lokasi">${lokasiHTML}</td>
+      <td class="periode">${periodeHTML}</td>
+      <td class="alasan">${d.alasan}</td>
+      <td class="status"><span class="status-pill ${d.status}">${STATUS_LABEL[d.status]}</span></td>
+    </tr>`;
+  }).join("");
+
+  renderTimeline(filtered);
+}
+
+document.querySelectorAll('.chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    state.status = chip.dataset.status;
+    renderTable();
+  });
+});
+unitFilter.addEventListener('change', e=>{ state.unit = e.target.value; renderTable(); });
+document.getElementById('searchBox').addEventListener('input', e=>{ state.q = e.target.value; renderTable(); });
+
+renderTable();
+</script>
+</body>
+</html>
